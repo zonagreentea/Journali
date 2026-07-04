@@ -1,4 +1,4 @@
-# 🧊 Liquid Glass Journal
+# 🧊 Journali - Liquid Glass Journal
 
 AI-powered bullet journal for iOS, iPadOS, and macOS with Apple-native sync and reflective AI intelligence.
 

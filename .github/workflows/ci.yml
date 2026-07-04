@@ -1,0 +1,48 @@
+name: CI
+on:
+  push:
+    branches: [ feature/ios-mac-multiplatform-lot-web ]
+  workflow_dispatch:
+
+jobs:
+  build-native:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby (fastlane)
+        uses: ruby/setup-ruby@v1
+      - name: Install fastlane
+        run: gem install fastlane
+      - name: Build iOS app (placeholder)
+        run: echo "Building iOS/macOS projects requires Xcode on macOS runners. Open the workspace locally to build."
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        working-directory: web
+        run: npm ci
+      - name: Build web
+        working-directory: web
+        run: npm run build
+
+  upload-testflight:
+    if: false # gated: enable when secrets are configured
+    runs-on: macos-latest
+    needs: build-native
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install fastlane
+        run: gem install fastlane
+      - name: Run fastlane beta
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: fastlane beta

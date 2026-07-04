@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StaticShock — Secrets helper (local only)</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin: 24px; color: #0b1220; }
+    h1 { margin-bottom: 4px; }
+    p.lead { color: #374151; margin-top: 0; }
+    label { display:block; margin-top: 12px; font-weight:600 }
+    input[type=text], textarea { width:100%; box-sizing:border-box; padding:8px; margin-top:4px; border:1px solid #d1d5db; border-radius:6px; font-family:monospace }
+    textarea { min-height:120px; }
+    .row { display:flex; gap:12px }
+    .col { flex:1 }
+    .actions { margin-top:18px }
+    button { background:#2563eb; color:white; border:0; padding:10px 14px; border-radius:8px; cursor:pointer }
+    button.secondary { background:#6b7280 }
+    pre { background:#f3f4f6; padding:12px; border-radius:6px; overflow:auto }
+    .note { font-size:90%; color:#6b7280 }
+    footer { margin-top:18px; font-size:90%; color:#6b7280 }
+  </style>
+</head>
+<body>
+  <h1>StaticShock</h1>
+  <p class="lead">Local helper to build the GitHub Secrets commands for the Journali repository. This page runs entirely in your browser and does not send values anywhere.</p>
+
+  <div class="note">Security reminder: Prefer pasting .p8 files directly into the GitHub Secrets UI or use the <code>gh</code> CLI with a file path. Do not paste secrets into unknown pages. This tool is safe to run locally from this repository copy.</div>
+
+  <form id="secretsForm" onsubmit="return false;">
+    <label>APP_STORE_CONNECT_ISSUER_ID
+      <input id="APP_STORE_CONNECT_ISSUER_ID" type="text" placeholder="Issuer ID (e.g. 12345678-ABCD-...)" />
+    </label>
+
+    <label>APP_STORE_CONNECT_KEY_ID
+      <input id="APP_STORE_CONNECT_KEY_ID" type="text" placeholder="Key ID (e.g. ABCD1234)" />
+    </label>
+
+    <label>APP_STORE_CONNECT_PRIVATE_KEY (paste .p8 contents here OR leave blank to use CLI with file)
+      <textarea id="APP_STORE_CONNECT_PRIVATE_KEY" placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"></textarea>
+    </label>
+
+    <div class="row">
+      <div class="col">
+        <label>APPLE_TEAM_ID
+          <input id="APPLE_TEAM_ID" type="text" placeholder="Team ID (numeric)" />
+        </label>
+      </div>
+      <div class="col">
+        <label>LOT_GATEWAY_BASE_URL
+          <input id="LOT_GATEWAY_BASE_URL" type="text" placeholder="https://your-lot.example.com" />
+        </label>
+      </div>
+    </div>
+
+    <label>LOT_CLIENT_ID
+      <input id="LOT_CLIENT_ID" type="text" placeholder="LoT OIDC client id" />
+    </label>
+
+    <label>LOT_CLIENT_SECRET or LOT_PRIVATE_SIGNING_KEY
+      <textarea id="LOT_CLIENT_SECRET" placeholder="Client secret or private signing key (if used)"></textarea>
+    </label>
+
+    <label>VERCEL_TOKEN (optional for web auto-deploy)
+      <input id="VERCEL_TOKEN" type="text" placeholder="VERCEL token" />
+    </label>
+
+    <div class="actions">
+      <button id="generateBtn">Generate GitHub Secrets Commands</button>
+      <button id="copyBtn" class="secondary" style="margin-left:8px">Copy Commands to Clipboard</button>
+    </div>
+  </form>
+
+  <h3 style="margin-top:20px">Generated commands</h3>
+  <div class="note">You can run these with the GitHub CLI (<code>gh</code>) on a machine with gh logged in as a repo admin. They will set repository secrets for <code>zonagreentea/Journali</code>.</div>
+  <pre id="output">(press Generate)</pre>
+
+  <footer>
+    Tip: for the APP_STORE_CONNECT_PRIVATE_KEY it's safer to use the CLI and a file: <code>gh secret set APP_STORE_CONNECT_PRIVATE_KEY --body "$(cat /path/to/AuthKey_XXXX.p8)" --repo zonagreentea/Journali</code>
+  </footer>
+
+  <script>
+    const names = [
+      'APP_STORE_CONNECT_ISSUER_ID',
+      'APP_STORE_CONNECT_KEY_ID',
+      'APP_STORE_CONNECT_PRIVATE_KEY',
+      'APPLE_TEAM_ID',
+      'LOT_GATEWAY_BASE_URL',
+      'LOT_CLIENT_ID',
+      'LOT_CLIENT_SECRET',
+      'VERCEL_TOKEN'
+    ]
+
+    function escapeForShell(s) {
+      if (s == null) return ''
+      // crude escape: wrap in single quotes and replace single quotes inside
+      return "'" + s.replace(/'/g, "'" + "'" + "'") + "'"
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const values = {}
+      names.forEach(n => values[n] = document.getElementById(n).value || '')
+
+      const lines = []
+      lines.push('# Run these commands on a machine with the GitHub CLI installed and authenticated.\n# They will set secrets for the repo: zonagreentea/Journali')
+
+      // Prefer file-based command for private key
+      if (values.APP_STORE_CONNECT_PRIVATE_KEY.trim() === '') {
+        lines.push('# If you prefer to use a local .p8 file for the private key (recommended):')
+        lines.push("gh secret set APP_STORE_CONNECT_PRIVATE_KEY --body \"$(cat /path/to/AuthKey_XXXX.p8)\" --repo zonagreentea/Journali")
+      } else {
+        // include inline variant
+        lines.push('gh secret set APP_STORE_CONNECT_PRIVATE_KEY --body ' + escapeForShell(values.APP_STORE_CONNECT_PRIVATE_KEY) + ' --repo zonagreentea/Journali')
+      }
+
+      // Other secrets
+      const other = ['APP_STORE_CONNECT_ISSUER_ID','APP_STORE_CONNECT_KEY_ID','APPLE_TEAM_ID','LOT_GATEWAY_BASE_URL','LOT_CLIENT_ID','LOT_CLIENT_SECRET','VERCEL_TOKEN']
+      other.forEach(k => {
+        if (values[k] && values[k].trim() !== '') {
+          lines.push('gh secret set ' + k + ' --body ' + escapeForShell(values[k]) + ' --repo zonagreentea/Journali')
+        } else {
+          lines.push('# gh secret set ' + k + ' --body "<value>" --repo zonagreentea/Journali   # (fill value)')
+        }
+      })
+
+      const out = lines.join('\n')
+      document.getElementById('output').textContent = out
+    })
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const text = document.getElementById('output').textContent
+      if (!text || text.trim() === '(press Generate)') {
+        alert('Generate the commands first')
+        return
+      }
+      try {
+        await navigator.clipboard.writeText(text)
+        alert('Commands copied to clipboard — paste into your terminal')
+      } catch (e) {
+        prompt('Copy the commands below (Ctrl/Cmd+C)', text)
+      }
+    })
+  </script>
+</body>
+</html>

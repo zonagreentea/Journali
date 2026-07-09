@@ -1,5 +1,17 @@
 # 🧊 Journali - Liquid Glass Journal
 
+A privacy-friendly journal app that now runs as a cross-platform web experience on Windows, macOS, and Linux. It can be installed as a progressive web app and used locally in the browser with offline support.
+
+## ▶️ Run locally
+
+Open the project folder in a browser, or serve it with a simple static server:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then visit http://127.0.0.1:8000.
+
 AI-powered bullet journal for iOS, iPadOS, and macOS with Apple-native sync and reflective AI intelligence.
 
 ---

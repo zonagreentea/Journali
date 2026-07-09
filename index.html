@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111827" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Journali" />
+    <meta property="og:url" content="https://journali.is/" />
+    <link rel="canonical" href="https://journali.is/" />
+    <link rel="alternate" href="https://www.journali.is/" hreflang="en" />
+    <title>Journali</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Cross-platform journaling</p>
+          <h1>Journali</h1>
+          <p class="subtitle">A calm, private space for daily notes that works on Windows, macOS, and Linux.</p>
+        </div>
+        <div class="actions" role="group" aria-label="Journal actions">
+          <button id="exportBtn" class="secondary">Export</button>
+          <label class="secondary file-label">
+            Import
+            <input id="importInput" type="file" accept="application/json" />
+          </label>
+        </div>
+      </header>
+
+      <section class="composer card">
+        <form id="entryForm">
+          <label class="field">
+            <span>What happened today?</span>
+            <textarea id="entryText" rows="5" placeholder="Capture a thought, a win, or a lesson..." required></textarea>
+          </label>
+
+          <div class="row">
+            <label class="field">
+              <span>Mood</span>
+              <select id="moodSelect">
+                <option value="calm">Calm</option>
+                <option value="focused">Focused</option>
+                <option value="joyful">Joyful</option>
+                <option value="reflective">Reflective</option>
+                <option value="tired">Tired</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Tags</span>
+              <input id="tagInput" type="text" placeholder="work, gratitude, ideas" />
+            </label>
+          </div>
+
+          <button type="submit">Save entry</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="toolbar">
+          <h2>Recent entries</h2>
+          <label class="search">
+            <span class="sr-only">Search entries</span>
+            <input id="searchInput" type="search" placeholder="Search entries" />
+          </label>
+        </div>
+        <div id="entryList" class="entry-list"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
